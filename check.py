@@ -15,15 +15,17 @@ headers = {
 res = requests.get(URL, headers=headers)
 soup = BeautifulSoup(res.text, "html.parser")
 
-# 페이지 전체 텍스트에서 버전 패턴 찾기 (숫자.숫자 형태)
-page_text = soup.get_text()
+# __NEXT_DATA__ JSON 가져오기
+next_data = soup.find("script", id="__NEXT_DATA__")
+data = json.loads(next_data.string)
 
-version_match = re.search(r"\d+\.\d+(\.\d+)?", page_text)
-version_value = version_match.group() if version_match else "버전 확인 실패"
+# JSON 내부에서 버전/업데이트 정보 찾기
+page_props = data["props"]["pageProps"]
 
-# 업데이트 날짜 찾기
-updated_match = re.search(r"\d{4}\.\s?\d{1,2}\.\s?\d{1,2}", page_text)
-updated_value = updated_match.group() if updated_match else "날짜 확인 실패"
+app_data = page_props["appDetails"]
+
+version_value = app_data.get("version", "버전 확인 실패")
+updated_value = app_data.get("updated", "날짜 확인 실패")
 
 current_data = {
     "updated": updated_value,
