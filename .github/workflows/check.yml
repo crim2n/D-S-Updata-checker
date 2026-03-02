@@ -30,4 +30,3 @@ jobs:
         with:
           add: 'state.json'
           message: 'update state'
-          # test
