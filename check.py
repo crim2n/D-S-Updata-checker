@@ -9,23 +9,23 @@ WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 STATE_FILE = "state.json"
 
 headers = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
 }
 
 res = requests.get(URL, headers=headers)
 soup = BeautifulSoup(res.text, "html.parser")
 
-# __NEXT_DATA__ JSON 가져오기
-next_data = soup.find("script", id="__NEXT_DATA__")
-data = json.loads(next_data.string)
+# 페이지 전체 텍스트에서 정확한 버전 패턴 찾기
+page_text = soup.get_text()
 
-# JSON 내부에서 버전/업데이트 정보 찾기
-page_props = data["props"]["pageProps"]
+# 버전은 보통 숫자.숫자.숫자 이상 구조 (평점 4.6 제거)
+version_matches = re.findall(r"\d+\.\d+\.\d+", page_text)
+version_value = version_matches[0] if version_matches else "버전 확인 실패"
 
-app_data = page_props["appDetails"]
-
-version_value = app_data.get("version", "버전 확인 실패")
-updated_value = app_data.get("updated", "날짜 확인 실패")
+# 업데이트 날짜 찾기 (YYYY. M. D 형태)
+updated_match = re.search(r"\d{4}\.\s?\d{1,2}\.\s?\d{1,2}", page_text)
+updated_value = updated_match.group() if updated_match else "날짜 확인 실패"
 
 current_data = {
     "updated": updated_value,
