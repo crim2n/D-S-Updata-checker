@@ -1,0 +1,32 @@
+name: PlayStore Update Check
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # 1시간마다 실행
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install requests beautifulsoup4
+
+      - name: 실행
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python check.py
+
+      - name: 상태 저장
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'state.json'
+          message: 'update state'
