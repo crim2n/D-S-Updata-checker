@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import json
+import re
 
 URL = "https://play.google.com/store/apps/details?id=com.nspgames.dungeonslasher&hl=ko&gl=KR"
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
@@ -14,13 +15,15 @@ headers = {
 res = requests.get(URL, headers=headers)
 soup = BeautifulSoup(res.text, "html.parser")
 
-# 업데이트 날짜 찾기
-updated_text = soup.find(string=lambda x: x and "업데이트" in x or "Updated" in x)
-updated_value = updated_text.find_next().text.strip()
+# 페이지 전체 텍스트에서 버전 패턴 찾기 (숫자.숫자 형태)
+page_text = soup.get_text()
 
-# 현재 버전 찾기
-version_text = soup.find(string=lambda x: x and "현재 버전" in x or "Current Version" in x)
-version_value = version_text.find_next().text.strip()
+version_match = re.search(r"\d+\.\d+(\.\d+)?", page_text)
+version_value = version_match.group() if version_match else "버전 확인 실패"
+
+# 업데이트 날짜 찾기
+updated_match = re.search(r"\d{4}\.\s?\d{1,2}\.\s?\d{1,2}", page_text)
+updated_value = updated_match.group() if updated_match else "날짜 확인 실패"
 
 current_data = {
     "updated": updated_value,
