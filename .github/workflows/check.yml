@@ -2,8 +2,9 @@ name: PlayStore Update Check
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # 30분마다 실행
-  workflow_dispatch:
+    # 30분 간격은 유지하되, 정각/30분을 피해 12분과 42분에 실행하도록 설정
+    - cron: "13,43 * * * *"   
+  workflow_dispatch: # 수동 실행 버튼 활성화
 
 jobs:
   check:
@@ -18,15 +19,19 @@ jobs:
           python-version: '3.11'
 
       - name: 라이브러리 설치
-        run: pip install requests google-play-scraper
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-play-scraper
 
       - name: 실행
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python check.py
 
-      - name: 상태 저장
+      - name: 상태 저장 (state.json 커밋)
         uses: EndBug/add-and-commit@v9
         with:
           add: 'state.json'
-          message: 'update state'
+          # 커밋 메시지에 실행 시간을 포함하면 히스토리 확인이 편합니다.
+          message: 'update state: ${{ github.event.schedule }}'
+          default_author: github_actions
