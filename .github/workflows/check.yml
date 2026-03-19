@@ -3,7 +3,7 @@ name: PlayStore Update Check
 on:
   schedule:
     # 30분 간격은 유지하되, 정각/30분을 피해 12분과 42분에 실행하도록 설정
-    - cron: "13,43 * * * *"   
+    - cron: "7,27,47 * * * *"   
   workflow_dispatch: # 수동 실행 버튼 활성화
 
 jobs:
